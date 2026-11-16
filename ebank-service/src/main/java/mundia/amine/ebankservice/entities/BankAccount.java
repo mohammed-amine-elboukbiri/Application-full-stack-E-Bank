@@ -2,7 +2,9 @@ package mundia.amine.ebankservice.entities;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
 import lombok.*;
+import mundia.amine.ebankservice.model.Customer;
 
 import java.util.Date;
 
@@ -15,4 +17,6 @@ public class BankAccount {
     private double balance;
     private String type;
     private Long customer_id;
+    @Transient
+    private Customer customer;
 }
