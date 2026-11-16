@@ -2,13 +2,11 @@ package mundia.amine.customerservice.controllers;
 
 import mundia.amine.customerservice.entities.Customer;
 import mundia.amine.customerservice.service.CustomerService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RestController
 public class CustomerRestController {
     private CustomerService customerService;
 
