@@ -16,7 +16,7 @@ public class BankAccount {
     private Date CreatedAt;
     private double balance;
     private String type;
-    private Long customer_id;
+    private Long customerId;
     @Transient
     private Customer customer;
 }
