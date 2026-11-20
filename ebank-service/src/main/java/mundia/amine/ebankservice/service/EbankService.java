@@ -39,7 +39,7 @@ public class EbankService {
             bankAccount.setCreatedAt(new Date());
             return bankAccountRepository.save(bankAccount);
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage()dd);
+            throw new RuntimeException(e.getMessage());
         }
     }
 }
