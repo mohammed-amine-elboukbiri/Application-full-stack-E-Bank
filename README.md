@@ -15,7 +15,6 @@ Application basée sur une **architecture microservices** avec Spring Boot et Sp
 - [Fault Tolerance avec Resilience4J](#-fault-tolerance-avec-resilience4j)
 - [Lancer le projet](#-lancer-le-projet)
 - [Tests avec Swagger-UI](#-tests-avec-swagger-ui)
-- [Auteur](#-auteur)
 
 ---
 
@@ -33,35 +32,25 @@ Application basée sur une **architecture microservices** avec Spring Boot et Sp
 
 ## 🏗 Architecture
 
-```mermaid
-flowchart LR
-    Client([Client REST / Swagger-UI]) --> GW[Gateway :8888]
-    GW --> CS[Customer-Service :8081]
-    GW --> EB[EBank-Service :8082]
-    EB -- OpenFeign + Circuit Breaker --> CS
-    GW -. découverte .-> DS[(Discovery Service :8761)]
-    CS -. enregistrement .-> DS
-    EB -. enregistrement .-> DS
-```
 
 | Service            | Rôle                                         | Port   |
 |--------------------|----------------------------------------------|--------|
 | Discovery Service  | Registre des services (Eureka Server)        | `8761` |
-| Gateway            | Point d'entrée unique, routage dynamique     | `8888` |
-| Customer-Service   | Gestion des clients                          | `8081` |
-| EBank-Service      | Gestion des comptes bancaires                | `8082` |
+| Gateway            | Point d'entrée unique, routage dynamique     | `9999` |
+| Customer-Service   | Gestion des clients                          | `8086` |
+| EBank-Service      | Gestion des comptes bancaires                | `8087` |
 
-> ℹ️ Adaptez les ports selon votre configuration.
+
 
 ---
 
 ## 🛠 Technologies
 
-- **Java 17+**
-- **Spring Boot 3.x**
+- **Java 21**
+- **Spring Boot 4.1.2**
 - **Spring Cloud** (Netflix Eureka, Gateway, OpenFeign)
 - **Resilience4J** (Circuit Breaker)
-- **Spring Data JPA** + base de données **H2** (ou MySQL)
+- **Spring Data JPA** + base de données **H2** 
 - **Lombok**
 - **springdoc-openapi** (Swagger-UI)
 - **Maven**
@@ -70,14 +59,7 @@ flowchart LR
 
 ## 📁 Structure du projet
 
-```
-.
-├── discovery-service/     # Eureka Server
-├── gateway-service/       # Spring Cloud Gateway
-├── customer-service/      # Microservice clients
-├── ebank-service/         # Microservice comptes bancaires
-└── README.md
-```
+<img width="521" height="454" alt="Screenshot 2026-11-21 at 13 36 55" src="https://github.com/user-attachments/assets/5907cc72-1d0b-4aca-9e1d-c7a1f21f6c90" />
 
 ---
 
@@ -87,47 +69,11 @@ flowchart LR
 
 Serveur Eureka permettant l'enregistrement et la découverte dynamique des microservices.
 
-**Dépendance :** `spring-cloud-starter-netflix-eureka-server`
-
-```java
-@SpringBootApplication
-@EnableEurekaServer
-public class DiscoveryServiceApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(DiscoveryServiceApplication.class, args);
-    }
-}
-```
-
-```properties
-server.port=8761
-eureka.client.register-with-eureka=false
-eureka.client.fetch-registry=false
-```
-
-📍 Console Eureka : <http://localhost:8761>
-
 ---
 
 ### 2. Customer-Service
 
 Gère le cycle de vie des clients (CRUD).
-
-**Dépendances :** Spring Web, Spring Data JPA, H2, Lombok, Eureka Client, springdoc-openapi
-
-| Méthode  | Endpoint           | Description               |
-|----------|--------------------|---------------------------|
-| `GET`    | `/customers`       | Lister tous les clients   |
-| `GET`    | `/customers/{id}`  | Récupérer un client       |
-| `POST`   | `/customers`       | Créer un client           |
-| `PUT`    | `/customers/{id}`  | Modifier un client        |
-| `DELETE` | `/customers/{id}`  | Supprimer un client       |
-
-```properties
-server.port=8081
-spring.application.name=CUSTOMER-SERVICE
-eureka.client.service-url.defaultZone=http://localhost:8761/eureka
-```
 
 ---
 
@@ -135,134 +81,45 @@ eureka.client.service-url.defaultZone=http://localhost:8761/eureka
 
 Gère les comptes bancaires et les associe à un client (récupéré depuis `Customer-Service`).
 
-**Dépendances :** Spring Web, Spring Data JPA, H2, Lombok, Eureka Client, OpenFeign, Resilience4J, springdoc-openapi
-
-| Méthode  | Endpoint                          | Description                          |
-|----------|-----------------------------------|--------------------------------------|
-| `GET`    | `/accounts`                       | Lister tous les comptes              |
-| `GET`    | `/accounts/{id}`                  | Récupérer un compte (avec son client)|
-| `POST`   | `/accounts`                       | Créer un compte                      |
-| `GET`    | `/accounts/customer/{customerId}` | Comptes d'un client                  |
-
-```properties
-server.port=8082
-spring.application.name=EBANK-SERVICE
-eureka.client.service-url.defaultZone=http://localhost:8761/eureka
-```
-
 ---
 
 ### 4. Gateway
 
 Point d'entrée unique de l'application. Le routage est dynamique grâce à Eureka.
 
-**Dépendances :** `spring-cloud-starter-gateway`, Eureka Client
+### Exemples d'accès via la gateway :
 
-```yaml
-server:
-  port: 8888
+**Vers E-Bank :**
 
-spring:
-  application:
-    name: GATEWAY-SERVICE
-  cloud:
-    gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
+**Affichage de tous les compte :** 
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
-```
+<img width="527" height="961" alt="Screenshot 2026-11-20 at 22 51 11" src="https://github.com/user-attachments/assets/8e8b9a64-2f57-4053-85b5-5dc73620f82f" />
 
-Exemples d'accès via la gateway :
 
-- `http://localhost:8888/customer-service/customers`
-- `http://localhost:8888/ebank-service/accounts`
+**Affichage d'un compte par son id :**
+
+<img width="721" height="270" alt="Screenshot 2026-11-20 at 22 51 32" src="https://github.com/user-attachments/assets/bd5bbfe6-f302-427c-904a-358451ee8d81" />
+
+
+**Vers Customers :**
+
+
+**Affichage de tous les clients :** 
+
+<img width="503" height="361" alt="Screenshot 2026-11-20 at 23 00 48" src="https://github.com/user-attachments/assets/5e7aaa0c-eeb9-497e-ad9a-4572632e0b8f" />
 
 ---
+
 
 ## 🔗 Communication avec OpenFeign
 
 `EBank-Service` appelle `Customer-Service` de manière déclarative grâce à **OpenFeign**.
-
-**Activation :**
-
-```java
-@SpringBootApplication
-@EnableFeignClients
-public class EbankServiceApplication { ... }
-```
-
-**Client Feign :**
-
-```java
-@FeignClient(name = "CUSTOMER-SERVICE")
-public interface CustomerRestClient {
-
-    @GetMapping("/customers/{id}")
-    @CircuitBreaker(name = "customerService", fallbackMethod = "getDefaultCustomer")
-    Customer findCustomerById(@PathVariable Long id);
-
-    @GetMapping("/customers")
-    @CircuitBreaker(name = "customerService", fallbackMethod = "getAllCustomers")
-    List<Customer> allCustomers();
-
-    default Customer getDefaultCustomer(Long id, Exception e) {
-        Customer customer = new Customer();
-        customer.setId(id);
-        customer.setFirstName("Non disponible");
-        customer.setLastName("Non disponible");
-        customer.setEmail("Non disponible");
-        return customer;
-    }
-
-    default List<Customer> getAllCustomers(Exception e) {
-        return List.of();
-    }
-}
-```
 
 ---
 
 ## 🛡 Fault Tolerance avec Resilience4J
 
 Un **Circuit Breaker** protège `EBank-Service` en cas d'indisponibilité de `Customer-Service`. Si le service client est en panne ou trop lent, le circuit s'ouvre et une **méthode de repli (fallback)** est exécutée à la place de l'erreur.
-
-**Dépendances :**
-
-```xml
-<dependency>
-    <groupId>org.springframework.cloud</groupId>
-    <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
-</dependency>
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-actuator</artifactId>
-</dependency>
-<dependency>
-    <groupId>org.springframework.boot</groupId>
-    <artifactId>spring-boot-starter-aop</artifactId>
-</dependency>
-```
-
-**Configuration (`application.properties`) :**
-
-```properties
-resilience4j.circuitbreaker.instances.customerService.register-health-indicator=true
-resilience4j.circuitbreaker.instances.customerService.sliding-window-size=10
-resilience4j.circuitbreaker.instances.customerService.minimum-number-of-calls=5
-resilience4j.circuitbreaker.instances.customerService.failure-rate-threshold=50
-resilience4j.circuitbreaker.instances.customerService.wait-duration-in-open-state=10s
-resilience4j.circuitbreaker.instances.customerService.permitted-number-of-calls-in-half-open-state=3
-resilience4j.circuitbreaker.instances.customerService.automatic-transition-from-open-to-half-open-enabled=true
-
-management.endpoints.web.exposure.include=*
-management.health.circuitbreakers.enabled=true
-```
 
 **États du Circuit Breaker :**
 
@@ -278,57 +135,38 @@ management.health.circuitbreakers.enabled=true
 2. Appeler `GET /accounts/{id}` → les données du client s'affichent.
 3. **Arrêter `Customer-Service`**.
 4. Rappeler `GET /accounts/{id}` → la réponse de **fallback** est renvoyée.
-5. Consulter l'état du circuit : <http://localhost:8082/actuator/health>
+
+<img width="753" height="277" alt="Screenshot 2026-11-20 at 22 52 03" src="https://github.com/user-attachments/assets/3d618b09-148e-4d43-a3b0-06927fa56fe0" />
+
 
 ---
 
 ## 🚀 Lancer le projet
 
-### Prérequis
-
-- JDK 17+
-- Maven 3.8+
-
 ### Ordre de démarrage
 
-```bash
-# 1. Cloner le dépôt
-git clone https://github.com/<votre-username>/<nom-du-repo>.git
-cd <nom-du-repo>
+#### 2. Discovery Service (en premier)
 
-# 2. Discovery Service (en premier)
-cd discovery-service && mvn spring-boot:run
 
-# 3. Customer-Service
-cd customer-service && mvn spring-boot:run
+#### 3. Customer-Service
 
-# 4. EBank-Service
-cd ebank-service && mvn spring-boot:run
 
-# 5. Gateway (en dernier)
-cd gateway-service && mvn spring-boot:run
+#### 4. EBank-Service
+
+
+#### 5. Gateway (en dernier)
+
+```
+Vérifier que tous les services sont enregistrés sur <http://localhost:8761>.
+
 ```
 
-Vérifier que tous les services sont enregistrés sur <http://localhost:8761>.
+<img width="1492" height="959" alt="Screenshot 2026-11-20 at 17 53 25" src="https://github.com/user-attachments/assets/ffbc37c1-930d-45cb-ace1-6dfb295f5a77" />
+
 
 ---
 
 ## 🧪 Tests avec Swagger-UI
-
-**Dépendance (dans Customer-Service et EBank-Service) :**
-
-```xml
-<dependency>
-    <groupId>org.springdoc</groupId>
-    <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-    <version>2.5.0</version>
-</dependency>
-```
-
-| Service           | Swagger-UI                                    |
-|-------------------|-----------------------------------------------|
-| Customer-Service  | <http://localhost:8081/swagger-ui.html>       |
-| EBank-Service     | <http://localhost:8082/swagger-ui.html>       |
 
 Swagger-UI permet de :
 
@@ -336,14 +174,16 @@ Swagger-UI permet de :
 - envoyer des requêtes `GET`, `POST`, `PUT`, `DELETE`,
 - inspecter les réponses et les codes HTTP.
 
+**Test du requête Get de tous les comptes**.
+
+<img width="1462" height="998" alt="Screenshot 2026-11-20 at 22 58 12" src="https://github.com/user-attachments/assets/2c07feb6-ec05-4465-8024-8b40297e8701" />
+
+**Test du requête Post qui permet d'ajouter un compte**.
+
+<img width="1423" height="913" alt="Screenshot 2026-11-20 at 22 59 11" src="https://github.com/user-attachments/assets/ec3b891d-93c2-4651-a8db-c997c0f89f25" />
+
+**Test du requête Get d'un compte par son id**.
+
+<img width="1444" height="850" alt="Screenshot 2026-11-20 at 22 59 29" src="https://github.com/user-attachments/assets/a2599b7c-e1e2-4505-8fb6-f3023132e57f" />
+
 ---
-
-## 👤 Auteur
-
-**Votre Nom**
-- GitHub : [@votre-username](https://github.com/votre-username)
-- LinkedIn : [Votre profil](https://linkedin.com/in/votre-profil)
-
----
-
-⭐ N'hésitez pas à mettre une étoile au dépôt si ce projet vous a été utile !
