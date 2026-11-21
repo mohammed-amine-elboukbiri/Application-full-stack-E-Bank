@@ -1,4 +1,4 @@
-# 🏦 Architecture Microservices – Customer & E-Bank
+# Partie 1 : 🏦 Architecture Microservices – Customer & E-Bank
 
 Application basée sur une **architecture microservices** avec Spring Boot et Spring Cloud. Elle gère des clients (`Customer-Service`) et leurs comptes bancaires (`EBank-Service`), avec communication inter-services, tolérance aux pannes, passerelle d'accès et découverte de services.
 
